@@ -3,6 +3,7 @@ print('argument', sys.argv)
 day=sys.argv[1]
 print(f'Running pipeline for day {day}')
 
+
 import pandas as pd
 
 df = pd.DataFrame({"A": [1, 2], "B": [3, 4]})
