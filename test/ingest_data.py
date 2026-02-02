@@ -4,6 +4,7 @@
 import pandas as pd
 from sqlalchemy import create_engine
 from tqdm.auto import tqdm
+import click
 
 dtype = {
     "VendorID": "Int64",
@@ -29,19 +30,21 @@ parse_dates = [
     "tpep_dropoff_datetime"
 ]
 
-def run():
-    pg_user = 'root'
-    pg_password = 'root'
-    pg_host = 'localhost'
-    pg_port = 5432
-    pg_db = 'ny_taxi'
 
-    year = 2021
-    month = 1
-
-    target_table = 'yellow_taxi_data'
-    chunksize = 100000
-
+def run(
+    pg_user: str,
+    pg_password: str,
+    pg_host: str,
+    pg_port: int,
+    pg_db: str,
+    year: int,
+    month: int,
+    target_table: str,
+    chunksize: int,
+):
+    """
+    Ingest taxi data for a given year/month into Postgres.
+    """
     prefix = 'https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/'
     url = f'{prefix}yellow_tripdata_{year}-{month:02d}.csv.gz'
 
@@ -75,5 +78,20 @@ def run():
 
     print("Ingestion completed successfully.")
 
+
+@click.command()
+@click.option('--pg-user', default='root', show_default=True, help='Postgres user')
+@click.option('--pg-password', default='root', show_default=True, help='Postgres password')
+@click.option('--pg-host', default='localhost', show_default=True, help='Postgres host')
+@click.option('--pg-port', default=5432, type=int, show_default=True, help='Postgres port')
+@click.option('--pg-db', default='ny_taxi', show_default=True, help='Postgres database')
+@click.option('--year', default=2021, type=int, show_default=True, help='Year of the data')
+@click.option('--month', default=1, type=click.IntRange(1, 12), show_default=True, help='Month of the data (1-12)')
+@click.option('--target-table', default='yellow_taxi_data', show_default=True, help='Target table name')
+@click.option('--chunksize', default=100000, type=int, show_default=True, help='Chunk size for ingestion')
+def main(pg_user, pg_password, pg_host, pg_port, pg_db, year, month, target_table, chunksize):
+    run(pg_user, pg_password, pg_host, pg_port, pg_db, year, month, target_table, chunksize)
+
+
 if __name__ == '__main__':
-    run()# test/ingest_data.py
+    main()  # test/ingest_data.py
